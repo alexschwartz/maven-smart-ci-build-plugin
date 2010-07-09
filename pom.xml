@@ -28,14 +28,22 @@ under the License.
     <version>12</version>
   </parent>
 
-  <artifactId>maven-reactor-plugin</artifactId>
-  <version>1.0</version>
+  <artifactId>maven-smart-ci-build-plugin</artifactId>
+  <version>0.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
-  <name>Maven Reactor Plugin</name>
-  <description>Build a subset of interdependent projects in a reactor</description>
+  <name>Maven Smart CI Build Plugin</name>
+  <description>
+     Build a subset of interdependent projects in a reactor in a CI system.
+    Based on maven-reactor-plugin, v1.0
+  </description>
 
   <developers>
+    <developer>
+      <id>alschwartz</id>
+      <name>Alex Schwartz</name>
+      <timezone>-1</timezone>
+    </developer>
     <developer>
       <id>dfabulich</id>
       <name>Dan Fabulich</name>
@@ -48,13 +56,14 @@ under the License.
   </prerequisites>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/plugins/tags/maven-reactor-plugin-1.0</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/plugins/tags/maven-reactor-plugin-1.0</developerConnection>
-    <url>http://svn.apache.org/viewvc/maven/plugins/tags/maven-reactor-plugin-1.0</url>
+    <connection>scm:git:...</connection>
+    <developerConnection>scm:git:...</developerConnection>
+    <url>scm:git:...</url>
   </scm>
+  
   <issueManagement>
-    <system>jira</system>
-    <url>http://jira.codehaus.org/browse/MREACTOR</url>
+    <system>...</system>
+    <url>....</url>
   </issueManagement>
 
   <dependencies>
