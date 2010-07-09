@@ -57,7 +57,7 @@ under the License.
 
   <scm>
     <connection>scm:git:git://github.com/alexschwartz/maven-smart-ci-build-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:alexschwartz/maven-smart-ci-build-plugin.git</developerConnection>
+    <developerConnection>scm:git:ssh://git@github.com:alexschwartz/maven-smart-ci-build-plugin.git</developerConnection>
     <url>http://github.com/alexschwartz/maven-smart-ci-build-plugin.</url>
   </scm>
   
@@ -105,4 +105,26 @@ under the License.
       <scope>test</scope>
     </dependency>
   </dependencies>
+  
+  <build>
+    <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-scm-plugin</artifactId>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.maven.scm</groupId>
+          <artifactId>maven-scm-provider-gitexe</artifactId>
+          <version>1.2</version>
+        </dependency>
+        <dependency>
+        	<groupId>org.codehaus.plexus</groupId>
+        	<artifactId>plexus-utils</artifactId>
+        	<version>2.0.5</version>
+        </dependency>
+  
+      </dependencies>
+    </plugin>
+  </plugins>
+  </build>
 </project>
