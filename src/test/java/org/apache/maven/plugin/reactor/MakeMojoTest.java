@@ -114,6 +114,46 @@ public class MakeMojoTest extends TestCase
         assertEquals("businessLogic/pom.xml,ui/pom.xml", fi.getIncludes());
     }
     
+    public void testMakeScmChangesOneModuleAffected() throws Exception {
+        MakeScmChanges m = new MakeScmChanges();
+        m.collectedProjects = configuredProjects;
+        m.baseDir = baseDir;
+        m.goals = "install";
+        FakeInvoker fi = new FakeInvoker();
+        m.simpleInvoker = fi;
+        
+        ScmFile sf = new ScmFile(ui.getFile().getAbsolutePath(), ScmFileStatus.MODIFIED);
+        m.scmManager = new FakeScmManager(Arrays.asList(new ScmFile[] {sf} ));
+        m.scmConnection = "";
+        
+        m.execute();
+        assertEquals("ui/pom.xml", fi.getIncludes());
+    }
+    
+    public void testMakeScmChangesNoModuleAffected() throws Exception {
+        MakeScmChanges m = new MakeScmChanges();
+        m.collectedProjects = configuredProjects;
+        m.baseDir = baseDir;
+        m.goals = "install";
+        FakeInvoker fi = new FakeInvoker();
+        m.simpleInvoker = fi;
+        
+        try 
+        {
+            m.scmManager = new FakeScmManager( Arrays.asList( new ScmFile[] {} ) );
+            m.scmConnection = "";
+            
+            m.execute();        
+        }
+        catch ( Exception e ) 
+        {
+        	return;
+        }
+        
+        fail("expected exception");  
+           
+    }
+    
     public void testMakeResume() throws Exception {
         MakeMojo m = new MakeMojo();
         m.collectedProjects = configuredProjects;
