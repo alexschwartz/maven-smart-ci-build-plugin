@@ -90,10 +90,10 @@ public class MakeScmChanges
 
         List changedFiles = result.getChangedFiles();
         
-        executeMakeForChangedModules(changedFiles);
+        executeMakeForChangedModules( changedFiles, this.ignoreUnknown );
     }
 
-	protected void executeMakeForChangedModules(List changedFiles)
+	protected void executeMakeForChangedModules(List changedFiles, boolean ignoreUnknownModules )
 			throws MojoExecutionException, MojoFailureException 
     {   
         if ( changedFiles == null ) 
@@ -114,7 +114,7 @@ public class MakeScmChanges
                 getLog().debug( "Not a diff: " + status );
                 continue;
             }
-            if ( ignoreUnknown && ScmFileStatus.UNKNOWN.equals( status ) )
+            if ( ignoreUnknownModules && ScmFileStatus.UNKNOWN.equals( status ) )
             {
                 getLog().debug( "Ignoring unknown" );
                 continue;

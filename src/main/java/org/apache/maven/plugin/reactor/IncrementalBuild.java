@@ -19,29 +19,24 @@ package org.apache.maven.plugin.reactor;
  * under the License.
  */
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.scm.ScmFile;
 import org.apache.maven.scm.ScmFileSet;
-import org.apache.maven.scm.ScmFileStatus;
 import org.apache.maven.scm.ScmRevision;
-import org.apache.maven.scm.ScmVersion;
 import org.apache.maven.scm.command.diff.DiffScmResult;
-import org.apache.maven.scm.command.status.StatusScmResult;
-import org.apache.maven.scm.command.update.UpdateScmResult;
 import org.apache.maven.scm.manager.ScmManager;
 import org.apache.maven.scm.repository.ScmRepository;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Goal to build all projects that had been changed in SVN since the last successful build. 
@@ -112,6 +107,17 @@ public class IncrementalBuild
         
         
         ScmRevision startRevision = new ScmRevision( this.lastSuccessfulBuildScmVersion );
+        boolean hasLastSuccessfulBuildRevisionFile = lastSuccessfulBuildRevisionFile != null && lastSuccessfulBuildRevisionFile.exists();
+        if ( this.lastSuccessfulBuildScmVersion != null && hasLastSuccessfulBuildRevisionFile) 
+        {
+        	throw new MojoFailureException( "Please specify either lastSuccessfulBuildRevisionFile or lastSuccessfulBuildScmVersion" );
+        } 
+        if ( hasLastSuccessfulBuildRevisionFile ) 
+        {
+            startRevision = new ScmRevision( 
+                readFirstLine( lastSuccessfulBuildRevisionFile ) );
+        }
+        
         ScmRevision endRevision = new ScmRevision( this.currentScmVersion );
 
         getLog().info( "startRevision = " + startRevision);
@@ -129,7 +135,7 @@ public class IncrementalBuild
 
         List changedFiles = result.getChangedFiles();
         
-        executeMakeForChangedModules(changedFiles);
+        executeMakeForChangedModules( changedFiles, this.ignoreUnknown );
         
         try
         {
@@ -145,5 +151,25 @@ public class IncrementalBuild
         }
         
     }
+
+	private String readFirstLine(File file) 
+	{
+		String firstLine = null;
+		try 
+		{
+			FileInputStream fstream = new FileInputStream( file );
+		    // Get the object of DataInputStream
+			DataInputStream in = new DataInputStream( fstream );
+		    BufferedReader br = new BufferedReader( new InputStreamReader(in) );
+		    
+		    firstLine = br.readLine().trim();
+		    in.close();
+		} 
+		catch ( Exception e)
+		{
+		    
+		}
+		return firstLine;
+	}
 
 }
