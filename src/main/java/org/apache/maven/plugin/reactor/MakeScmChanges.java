@@ -90,7 +90,19 @@ public class MakeScmChanges
 
         List changedFiles = result.getChangedFiles();
         
-        List projectDirectories = getProjectDirectories();
+        executeMakeForChangedModules(changedFiles);
+    }
+
+	protected void executeMakeForChangedModules(List changedFiles)
+			throws MojoExecutionException, MojoFailureException 
+    {   
+        if ( changedFiles == null ) 
+        {
+            getLog().info( "No files changed" );
+            return;
+        }
+        
+		List projectDirectories = getProjectDirectories();
         Set changedDirectories = new HashSet();
         for ( int i = 0; i < changedFiles.size(); i++ )
         {
@@ -134,8 +146,7 @@ public class MakeScmChanges
         folderList = StringUtils.join( changedDirectories.iterator(), "," );
         getLog().info( "Going to make dependents for: " + folderList );
         super.execute();
-
-    }
+	}
 
     private List getProjectDirectories()
     {

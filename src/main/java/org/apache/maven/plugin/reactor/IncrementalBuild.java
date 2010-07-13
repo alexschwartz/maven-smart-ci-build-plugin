@@ -19,7 +19,10 @@ package org.apache.maven.plugin.reactor;
  * under the License.
  */
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,21 +34,28 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.scm.ScmFile;
 import org.apache.maven.scm.ScmFileSet;
 import org.apache.maven.scm.ScmFileStatus;
+import org.apache.maven.scm.ScmRevision;
+import org.apache.maven.scm.ScmVersion;
+import org.apache.maven.scm.command.diff.DiffScmResult;
 import org.apache.maven.scm.command.status.StatusScmResult;
+import org.apache.maven.scm.command.update.UpdateScmResult;
 import org.apache.maven.scm.manager.ScmManager;
 import org.apache.maven.scm.repository.ScmRepository;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
- * Goal to build all projects that you personally have changed (according to SCM)
+ * Goal to build all projects that had been changed in SVN since the last successful build. 
+ * To be used in CI system.
  * 
- * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * Is currently limited to build running in a SVN working copy.
+ * 
+ * @author <a href="mailto:dev@schwartzonline.de">Alex Schwartz</a>
  * @goal incremental-build
  * @aggregator
  * @phase process-sources
  */
 public class IncrementalBuild
-    extends MakeDependentsMojo
+    extends MakeScmChanges
 {
     /**
      * The SCM connection/provider info.  Should be specified in your POM.
@@ -60,8 +70,29 @@ public class IncrementalBuild
      * @parameter expression="${make.ignoreUnknown}" default-value=true
      */
     private boolean ignoreUnknown = true;
+    
+    /**
+     * The file to store the revision of the last successful build
+     * 
+     * @parameter default-value="${project.build.directory}/last-successful-build-revision.txt"
+     */
+    private File lastSuccessfulBuildRevisionFile;
+    
+    /**
+     * The version current revision number.
+     *
+     * @parameter expression="${lastSuccessfulBuildScmVersion}"
+     */
+    private String lastSuccessfulBuildScmVersion;
 
     /**
+     * The version current revision number.
+     *
+     * @parameter expression="${currentScmVersion}"
+     */
+    private String currentScmVersion;
+
+     /**
      * @component
      */
     ScmManager scmManager;
@@ -77,11 +108,19 @@ public class IncrementalBuild
         {
             throw new MojoFailureException("No SCM connection specified.  You must specify an SCM connection by adding a <connection> element to your <scm> element in your POM");
         }
-        StatusScmResult result = null;
+        DiffScmResult result = null;
+        
+        
+        ScmRevision startRevision = new ScmRevision( this.lastSuccessfulBuildScmVersion );
+        ScmRevision endRevision = new ScmRevision( this.currentScmVersion );
+
+        getLog().info( "startRevision = " + startRevision);
+        getLog().info( "endRevision   = " + endRevision);
+
         try
         {
-            ScmRepository repository = scmManager.makeScmRepository( scmConnection );
-            result = scmManager.status( repository, new ScmFileSet( baseDir ) );
+            ScmRepository repository = scmManager.makeScmRepository( scmConnection ); 
+            result = scmManager.diff( repository, new ScmFileSet( baseDir ), startRevision, endRevision );            
         }
         catch ( Exception e )
         {
@@ -90,62 +129,21 @@ public class IncrementalBuild
 
         List changedFiles = result.getChangedFiles();
         
-        List projectDirectories = getProjectDirectories();
-        Set changedDirectories = new HashSet();
-        for ( int i = 0; i < changedFiles.size(); i++ )
+        executeMakeForChangedModules(changedFiles);
+        
+        try
         {
-            ScmFile changedScmFile = (ScmFile) changedFiles.get( i );
-            getLog().debug( changedScmFile.toString() );
-            ScmFileStatus status = changedScmFile.getStatus();
-            if ( !status.isStatus() )
-            {
-                getLog().debug( "Not a diff: " + status );
-                continue;
-            }
-            if ( ignoreUnknown && ScmFileStatus.UNKNOWN.equals( status ) )
-            {
-                getLog().debug( "Ignoring unknown" );
-                continue;
-            }
-
-            File changedFile = new File( changedScmFile.getPath() );
-            boolean found = false;
-            // TODO There's a cleverer/faster way to code this, right?  This is O(n^2)
-            for ( int j = 0; j < projectDirectories.size(); j++ )
-            {
-                File projectDirectory = (File) projectDirectories.get( j );
-                if ( changedFile.getAbsolutePath().startsWith( projectDirectory.getAbsolutePath() + File.separator ) )
-                {
-                    String path = RelativePather.getRelativePath( baseDir, projectDirectory );
-                    if ( !changedDirectories.contains( path ) )
-                    {
-                        getLog().debug( "Including " + path );
-                    }
-                    changedDirectories.add( path );
-                    found = true;
-                    break;
-                }
-            }
-            if ( !found )
-            {
-                getLog().debug( "Couldn't find file in any reactor root: " + changedFile.getAbsolutePath() );
-            }
+            PrintWriter out = new PrintWriter(
+            		new BufferedWriter( new FileWriter( lastSuccessfulBuildRevisionFile) ));
+            out.println( currentScmVersion );
+            out.close();
         }
-        folderList = StringUtils.join( changedDirectories.iterator(), "," );
-        getLog().info( "Going to make dependents for: " + folderList );
-        super.execute();
-
-    }
-
-    private List getProjectDirectories()
-    {
-        List dirs = new ArrayList( collectedProjects.size() );
-        for ( int i = 0; i < collectedProjects.size(); i++ )
+        catch ( Exception e )
         {
-            MavenProject mp = (MavenProject) collectedProjects.get( i );
-            dirs.add( mp.getFile().getParentFile() );
+            throw new MojoFailureException( "Failed to write file '"
+                    + lastSuccessfulBuildRevisionFile + "'. Reason: ", e );
         }
-        return dirs;
+        
     }
 
 }
