@@ -27,9 +27,10 @@ under the License.
     <groupId>org.apache.maven.plugins</groupId>
     <version>12</version>
   </parent>
-
+  
+  <groupId>com.github.alschwartz</groupId>
   <artifactId>maven-smart-ci-build-plugin</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>1.0-alpha-1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Smart CI Build Plugin</name>
@@ -107,7 +108,7 @@ under the License.
   </dependencies>
   
   <build>
-    <plugins>
+    <!--<plugins>
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-scm-plugin</artifactId>
@@ -125,6 +126,6 @@ under the License.
   
       </dependencies>
     </plugin>
-  </plugins>
+  </plugins>-->
   </build>
 </project>
