@@ -28,7 +28,7 @@
 
     <groupId>com.github.alschwartz</groupId>
     <artifactId>maven-smart-ci-build-plugin</artifactId>
-    <version>1.0-alpha-2-SNAPSHOT</version>
+    <version>1.0-alpha-2</version>
     <packaging>maven-plugin</packaging>
 
     <name>Maven Smart CI Build Plugin</name>
