@@ -21,11 +21,11 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
+    <!--  <parent>
         <artifactId>maven-plugins</artifactId>
         <groupId>org.apache.maven.plugins</groupId>
         <version>12</version>
-    </parent>
+    </parent>-->
 
     <groupId>com.github.alschwartz</groupId>
     <artifactId>maven-smart-ci-build-plugin</artifactId>
